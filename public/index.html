@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1020" />
+<title>Ludo Royale — Real-time Multiplayer Ludo</title>
+<meta name="description" content="Play 4-player Ludo in real time with live emoji chat." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>" />
+</head>
+<body>
+
+<!-- animated background -->
+<div class="scene-bg" aria-hidden="true">
+  <span class="orb orb-1"></span>
+  <span class="orb orb-2"></span>
+  <span class="orb orb-3"></span>
+  <span class="grid-glow"></span>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-dice">🎲</span>
+    <span class="brand-text">Ludo<em>Royale</em></span>
+  </div>
+  <div class="topbar-right">
+    <button id="viewBtn" class="chip-btn" type="button" title="Toggle board perspective">3D View</button>
+    <span id="connPill" class="conn-pill loading"><i></i><span>Connecting…</span></span>
+  </div>
+</header>
+
+<main class="app">
+
+  <!-- ================= HOME ================= -->
+  <section id="screen-home" class="screen is-active">
+    <div class="glass home-card tilt-in">
+      <h1 class="hero-title">Ludo <span>Royale</span></h1>
+      <p class="hero-sub">Real-time 4-player Ludo · live emoji chat · play with 2, 3 or 4 friends</p>
+
+      <label class="field">
+        <span>Your name</span>
+        <input id="nameInput" type="text" maxlength="18" placeholder="e.g. Aarav" autocomplete="nicksname" />
+      </label>
+
+      <button id="createBtn" class="btn btn-primary btn-lg" type="button">
+        <span>Create a table</span>
+      </button>
+
+      <div class="divider"><span>or join with a code</span></div>
+
+      <div class="join-row">
+        <input id="codeInput" class="code-input" type="text" maxlength="5" placeholder="CODE" autocapitalize="characters" spellcheck="false" />
+        <button id="joinBtn" class="btn btn-ghost" type="button">Join</button>
+      </div>
+
+      <p id="homeError" class="form-error" role="alert"></p>
+
+      <ul class="rules">
+        <li><b>2 · 3 · 4</b> players per table, first to bring all 4 tokens home wins</li>
+        <li>Roll a <b>6</b> to release a token, then keep rolling</li>
+        <li>Chat lives only while the match runs — it is deleted when the game ends</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= LOBBY ================= -->
+  <section id="screen-lobby" class="screen">
+    <div class="lobby-grid">
+      <div class="glass lobby-card tilt-in">
+        <div class="lobby-head">
+          <div>
+            <p class="eyebrow">Room code</p>
+            <button id="roomCode" class="room-code" type="button" title="Copy code">— — — — —</button>
+          </div>
+          <div class="lobby-status">
+            <span id="lobbyCount" class="count-pill">0/4 seated</span>
+            <button id="leaveBtn" class="chip-btn" type="button">Leave</button>
+          </div>
+        </div>
+
+        <div id="seatGrid" class="seat-grid"></div>
+
+        <div class="lobby-actions">
+          <button id="startBtn" class="btn btn-primary btn-lg" type="button" disabled>
+            Waiting for players…
+          </button>
+          <p class="hint" id="lobbyHint">Minimum 2 players to start. You can begin with 3 too — latecomers will watch.</p>
+        </div>
+      </div>
+
+      <div class="glass chat-card tilt-in">
+        <div class="chat-head">
+          <h2>Table chat</h2>
+          <span id="chatStatusLobby" class="chat-status">lobby</span>
+        </div>
+        <div id="chatBodyLobby" class="chat-body"></div>
+        <div class="chat-form">
+          <button class="emoji-btn" type="button" data-emoji-for="chatInputLobby">😊</button>
+          <input id="chatInputLobby" type="text" placeholder="Say hello…" maxlength="300" autocomplete="off" />
+          <button class="send-btn" type="button" data-send-for="chatInputLobby">➤</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GAME ================= -->
+  <section id="screen-game" class="screen">
+    <div class="game-grid">
+
+      <div class="board-column">
+        <div class="board-shell">
+          <div class="board-3d" id="board3d">
+            <div class="board" id="board">
+              <div class="board-inner" id="boardInner"></div>
+              <div class="token-layer" id="tokenLayer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="glass panel players-panel">
+          <div class="panel-head">
+            <h2>Players</h2>
+            <span id="turnChip" class="turn-chip">—</span>
+          </div>
+          <div id="playerList" class="player-list"></div>
+        </div>
+
+        <div class="glass panel dice-panel">
+          <div class="dice-stage">
+            <div class="dice-shadow"></div>
+            <div class="dice" id="dice"></div>
+          </div>
+          <button id="rollBtn" class="btn btn-primary roll-btn" type="button" disabled>Roll dice</button>
+          <p id="turnHint" class="hint center">Waiting…</p>
+        </div>
+
+        <div class="glass panel chat-card">
+          <div class="chat-head">
+            <h2>Game chat</h2>
+            <span id="chatStatus" class="chat-status">saving</span>
+          </div>
+          <div id="chatBody" class="chat-body"></div>
+          <div class="quick-emojis" id="quickEmojis"></div>
+          <div class="chat-form">
+            <button class="emoji-btn" type="button" data-emoji-for="chatInput">😊</button>
+            <input id="chatInput" type="text" placeholder="Type a message…" maxlength="300" autocomplete="off" />
+            <button class="send-btn" type="button" data-send-for="chatInput">➤</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<!-- emoji picker popover (shared, moves to the active chat) -->
+<div id="emojiPop" class="emoji-pop" hidden>
+  <div class="emoji-pop-head">
+    <span>Pick an emoji</span>
+    <button id="emojiClose" type="button" aria-label="Close">✕</button>
+  </div>
+  <div class="emoji-grid" id="emojiGrid"></div>
+</div>
+
+<!-- winner overlay -->
+<div id="overlay" class="overlay" hidden>
+  <div class="glass overlay-card">
+    <div class="crown" id="overlayCrown">🏆</div>
+    <h2 id="overlayTitle">Winner!</h2>
+    <p id="overlayText"></p>
+    <p class="overlay-note">Match chat history has been deleted from the database.</p>
+    <div class="overlay-actions">
+      <button id="overlayLobbyBtn" class="btn btn-primary" type="button">Back to lobby</button>
+      <button id="overlayCloseBtn" class="btn btn-ghost" type="button">View board</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/board.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

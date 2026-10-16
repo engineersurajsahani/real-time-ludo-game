@@ -1,0 +1,31 @@
+# Render Blueprint - https://render.com/docs/blueprint-spec
+#
+# Deploy with: New + > Blueprint > pick this repo.
+# Secrets (MONGODB_URI) are intentionally left unsynced so you paste them into
+# the dashboard instead of committing them.
+
+services:
+  - type: web
+    name: ludo-royale
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: true
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.19.0
+      # One proxy hop in front of the app, so client IPs are read correctly.
+      - key: TRUST_PROXY
+        value: "true"
+      # Set these in the Render dashboard (marked as secret):
+      - key: MONGODB_URI
+        sync: false
+      # Optional: only needed if you serve the front-end from another origin.
+      - key: ALLOWED_ORIGINS
+        sync: false

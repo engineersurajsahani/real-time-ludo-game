@@ -1,0 +1,38 @@
+{
+  "name": "real-time-ludo-game",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Real-time multiplayer Ludo game with 4 players, live emoji chat, MongoDB Atlas chat persistence that is wiped when the game ends.",
+  "main": "server.js",
+  "devDependencies": {
+    "socket.io-client": "^4.8.4",
+    "ws": "^8.22.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test:flow": "node scripts/flow-test.js",
+    "test:db": "node scripts/db-check.js",
+    "test:ui": "node scripts/ui-check.js",
+    "test:security": "node scripts/security-check.js",
+    "test": "node scripts/flow-test.js && node scripts/security-check.js && node scripts/ui-check.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ludo",
+    "socket.io",
+    "express",
+    "realtime",
+    "multiplayer",
+    "mongodb-atlas"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5",
+    "socket.io": "^4.8.1"
+  }
+}
